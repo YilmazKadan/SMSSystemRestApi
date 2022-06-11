@@ -3,6 +3,8 @@
 namespace App\Http\Middleware;
 
 use Closure;
+use JWTAuth;
+use Exception;
 use Illuminate\Http\Request;
 
 class JwtMiddleware
@@ -16,6 +18,17 @@ class JwtMiddleware
      */
     public function handle(Request $request, Closure $next)
     {
+        try {
+            $user = JWTAuth::parseToken()->authenticate();
+        } catch (Exception $e) {
+            if ($e instanceof \Tymon\JWTAuth\Exceptions\TokenInvalidException){
+                return response()->json(['status' => 'Token Hatalı']);
+            }else if ($e instanceof \Tymon\JWTAuth\Exceptions\TokenExpiredException){
+                return response()->json(['status' => 'Tokenin süresi dolmuş']);
+            }else{
+                return response()->json(['status' => 'Token bulunamadı']);
+            }
+        }
         return $next($request);
     }
 }
