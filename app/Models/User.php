@@ -51,4 +51,9 @@ class User extends Authenticatable implements JWTSubject
     {
         return [];
     }
+
+
+    public function sms(){
+        return $this->hasMany(\App\Models\Sms::class,"user_id","id");
+    }
 }

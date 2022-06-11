@@ -13,8 +13,12 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('sms', function (Blueprint $table) {
+        Schema::create('smsreports', function (Blueprint $table) {
             $table->id();
+            $table->foreignId("user_id")->constrained();
+            $table->string("title");
+            $table->string("number");
+            $table->text("message");
             $table->timestamps();
         });
     }

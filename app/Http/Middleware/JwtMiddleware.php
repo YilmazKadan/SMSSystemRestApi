@@ -26,7 +26,7 @@ class JwtMiddleware
             }else if ($e instanceof \Tymon\JWTAuth\Exceptions\TokenExpiredException){
                 return response()->json(['status' => 'Tokenin süresi dolmuş']);
             }else{
-                return response()->json(['status' => 'Token bulunamadı']);
+                return response()->json(['status' => 'Token bulunamadı'],401);
             }
         }
         return $next($request);

@@ -4,17 +4,34 @@ namespace App\Http\Controllers;
 
 use App\Models\Sms;
 use Illuminate\Http\Request;
+use JWTAuth;
+use Tymon\JWTAuth\Exceptions\JWTException;
+use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Carbon;
 
 class SmsController extends Controller
 {
+
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        // Tarih filtresini oluşturuyoruz, eğer girilmez ise,
+        // bugün ve 100 yıl sonrasını aralık olarak belirliyoruz
+        $fromDate = $request->input('from_date') ?? Carbon::today();
+        $toDate = $request->input('to_date') ?? Carbon::today()->addYears(100);
+
+
+
+
+        $smses = $this->user()->sms()->whereBetween('created_at', [$fromDate, $toDate]);
+        return  response()->json([
+                "data" => $smses->get()
+                ]);
     }
 
     /**
@@ -35,7 +52,32 @@ class SmsController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $data = $request->only('title', 'number', 'message');
+        // Türk telefonu için regex kullanıldı
+        $validator = Validator::make($data, [
+            'title' => 'required|string',
+            'number' => 'required|regex:/^(05)([0-9]{2})\s?([0-9]{3})\s?([0-9]{2})\s?([0-9]{2})$/',
+            'message' => 'required'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->messages()], 200);
+        }
+
+        $sms = $this->user()->sms()->create([
+            'title' => $request->title,
+            'number' => $request->number,
+            'message' => $request->message
+        ]);
+
+        // Bu kısımda SMS servisi aracılığı ile SMS gönderimi sağlanabilir.
+
+        // Sms başarılı bir şekilde eklenildikten sonra
+        return response()->json([
+            'success' => true,
+            'message' => 'SMS başarılı bir şekilde gönderildi',
+            'data' => $sms
+        ], Response::HTTP_OK);
     }
 
     /**
@@ -46,7 +88,15 @@ class SmsController extends Controller
      */
     public function show(Sms $sms)
     {
-        //
+        $userId = $this->user()->id;
+        // SMS sahibi oturum açan kullanıcı mı ?
+        if($sms->user_id != $userId)
+            return response()->json(['error' => "Erişmeye çalıştığınız mesajın sahibi siz değilsiniz"],200);
+
+        return response()->json([
+            'success' => true,
+            'data' => $sms
+        ]);
     }
 
     /**
