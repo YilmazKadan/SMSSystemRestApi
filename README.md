@@ -45,3 +45,9 @@ Swagger Dokümantasyonunu tekrar oluşturmak için
 API dokumantasyonu için harici bir paket kullanıldı.
 Sistem çalışırken ``/api/documentation`` rotasına girerseniz, API rotaları hakkında
 daha fazla bilgiye ulaşabilirsiniz.
+
+
+# Veritabanı Şeması
+
+![image](https://user-images.githubusercontent.com/44698680/173251341-7e85d1a7-88a3-4fd2-a88c-11df5f883506.png)
+
