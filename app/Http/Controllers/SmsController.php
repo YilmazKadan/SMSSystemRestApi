@@ -9,11 +9,42 @@ use Tymon\JWTAuth\Exceptions\JWTException;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Carbon;
+use OpenApi\Annotations as OA;
 
 class SmsController extends Controller
 {
 
     /**
+     *
+     *  * @OA\Get(
+     *     tags={"SMS API"},
+     *     path="/api/sms",
+     *     summary="SMS Raporlarını Listeler",
+     *     security={{"bearerAuth":{}}},
+     *  * @OA\Parameter(
+     *    description="Tarih aralığının başlangıcı",
+     *    in="query",
+     *    name="from_date",
+     *    required=false,
+     *    @OA\Schema(
+     *       type="string",
+     * format ="date-time",
+     *    )
+     * ),
+     *  * @OA\Parameter(
+     *    description="Tarih aralığının sonu",
+     *    in="query",
+     *    name="to_date",
+     *    required=false,
+     *    @OA\Schema(
+     *       type="string",
+     * format ="date-time",
+     *    )
+     * ),
+     *     @OA\Response(response="401", description="fail"),
+     *     @OA\Response(response="404", description="fail"),
+     *     @OA\Response(response="200", description="success")
+     * )
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
@@ -22,16 +53,15 @@ class SmsController extends Controller
     {
         // Tarih filtresini oluşturuyoruz, eğer girilmez ise,
         // bugün ve 100 yıl sonrasını aralık olarak belirliyoruz
-        $fromDate = $request->input('from_date') ?? Carbon::today();
-        $toDate = $request->input('to_date') ?? Carbon::today()->addYears(100);
-
-
-
+        $fromDate = $request->input('from_date')  ?? Carbon::today();
+        $toDate   = $request->input('to_date')   ?? Carbon::today()->addYears(100);
 
         $smses = $this->user()->sms()->whereBetween('created_at', [$fromDate, $toDate]);
+
+
         return  response()->json([
-                "data" => $smses->get()
-                ]);
+            "data" => $smses->get()
+        ]);
     }
 
     /**
@@ -45,6 +75,41 @@ class SmsController extends Controller
     }
 
     /**
+     * @OA\Post(
+     * path="/api/sms",
+     * tags={"SMS API"},
+     * summary="SMS kaydı",
+     * security={{"bearerAuth":{}}},
+     * description="Buradan sms gönderimi ve kaydı gerçekleşir",
+     *     @OA\RequestBody(
+     *         @OA\JsonContent(),
+     *         @OA\MediaType(
+     *             mediaType="application/x-www-form-urlencoded",
+     *            @OA\Schema(
+     *               type="object",
+     *               required={"title","number", "message"},
+     *               @OA\Property(property="title", type="text"),
+     *               @OA\Property(property="number", type="tel"),
+     *               @OA\Property(property="message", type="text"),
+     *            ),
+     *        ),
+     *    ),
+     *
+     *      @OA\Response(
+     *          response=200,
+     *          description="Register Successfully",
+     *          @OA\JsonContent()
+     *       ),
+     *      @OA\Response(
+     *          response=422,
+     *          description="Unprocessable Entity",
+     *          @OA\JsonContent()
+     *       ),
+     *      @OA\Response(response=400, description="Bad request"),
+     *      @OA\Response(response=404, description="Resource Not Found"),
+     * )
+     *
+     *
      * Store a newly created resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
@@ -80,7 +145,30 @@ class SmsController extends Controller
         ], Response::HTTP_OK);
     }
 
+
+
     /**
+     * @OA\Get(
+     *     tags={"SMS API"},
+     *     path="/api/sms/{id}",
+     *     summary="SMS rapor detayını getirir",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *        name="id",
+     *        in="path",
+     *        description="SMS id",
+     *        @OA\Schema(
+     *           type="integer",
+     *           format="int64"
+     *        ),
+     *        required=true,
+     *        example=1
+     *     ),
+     *     @OA\Response(response="401", description="fail"),
+     *     @OA\Response(response="404", description="fail"),
+     *     @OA\Response(response="200", description="success")
+     * )
+     *
      * Display the specified resource.
      *
      * @param  \App\Models\Sms  $sms
@@ -90,8 +178,8 @@ class SmsController extends Controller
     {
         $userId = $this->user()->id;
         // SMS sahibi oturum açan kullanıcı mı ?
-        if($sms->user_id != $userId)
-            return response()->json(['error' => "Erişmeye çalıştığınız mesajın sahibi siz değilsiniz"],200);
+        if ($sms->user_id != $userId)
+            return response()->json(['error' => "Erişmeye çalıştığınız mesajın sahibi siz değilsiniz"], 200);
 
         return response()->json([
             'success' => true,

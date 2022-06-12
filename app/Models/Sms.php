@@ -16,5 +16,6 @@ class Sms extends Model
         "number",
         "message"
     ];
+
 }
 
