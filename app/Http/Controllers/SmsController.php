@@ -136,6 +136,8 @@ class SmsController extends Controller
         ]);
 
         // Bu kısımda SMS servisi aracılığı ile SMS gönderimi sağlanabilir.
+        // SMS api hizmeti burada kuyruğa alınıyor, Case'de tam olarak 500 istek ile ne kastedildiğini anlayamadım.
+        \App\Jobs\SmsSendJob::dispatch($sms);
 
         // Sms başarılı bir şekilde eklenildikten sonra
         return response()->json([
