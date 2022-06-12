@@ -40,4 +40,8 @@ için arka planda kullanacağı güvenlik anahtarını oluşturacak
 Swagger Dokümantasyonunu tekrar oluşturmak için
 ``php artisan l5-swagger:generate`` komutunu çalıştırmanızda fayda var.
 
+### API Dokümantasyonu
 
+API dokumantasyonu için harici bir paket kullanıldı.
+Sistem çalışırken ``/api/documentation`` rotasına girerseniz, API rotaları hakkında
+daha fazla bilgiye ulaşabilirsiniz.
